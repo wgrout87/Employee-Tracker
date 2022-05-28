@@ -24,6 +24,7 @@ const prompts = {
         manager: 'Who is the employee\'s manager?',
     },
     updateEmployee: 'Update an employee role',
+    return: 'Return to the main menu (Choosing no will exit the application)'
 }
 
 function menu() {
@@ -40,26 +41,51 @@ function menu() {
 function optionHandler(choice) {
     if (choice.menuOption === prompts.departments) {
         console.log('departments');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.roles) {
         console.log('roles');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.employees) {
         console.log('employees');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.addDepartment) {
         console.log('addDepartment');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.addRole) {
         console.log('addRole');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.addEmployee) {
         console.log('addEmployee');
+        return returnToMenu();
     }
     if (choice.menuOption === prompts.updateEmployee) {
         console.log('updateEmployee');
+        return returnToMenu();
     }
 }
+
+function returnToMenu () {
+    return inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'return',
+            message: prompts.return,
+            default: true
+        }
+    ])
+};
+
+function returnToMenuHandler(data) {
+    if (!data.return) {
+        process.exit();
+    }
+    return init();
+};
 
 function displayDepartments() {
 
@@ -67,7 +93,8 @@ function displayDepartments() {
 
 function init() {
     menu()
-        .then(optionHandler);
+        .then(optionHandler)
+        .then(returnToMenuHandler);
 };
 
 module.exports = {
