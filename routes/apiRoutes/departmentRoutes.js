@@ -24,7 +24,7 @@ router.post('/departments', ({ body }, res) => {
             return;
         }
         res.json({
-            message: 'Employee added to database!\n'
+            message: 'Department added to database!\n'
         });
     });
 });
