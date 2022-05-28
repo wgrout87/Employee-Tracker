@@ -11,18 +11,18 @@ const prompts = {
     employees: 'View all employees',
     addDepartment: 'Add a department',
     addDepartmentOptions: {
-        name: 'What is the name of the new department?'
+        name: 'What is the name of the new department? (1-30 Characters)'
     },
     addRole: 'Add a role',
     addRoleOptions: {
-        name: 'What is the name of the new role?',
-        salary: 'What is the salary for the new role?',
+        title: 'What is the new role? (1-30 Characters)',
+        salary: 'What is the salary for the new role? (Must be a number)',
         department: 'What is the department for the new role?'
     },
     addEmployee: 'Add an employee',
     addEmployeeOptions: {
-        firstName: 'What is the employee\'s first name?',
-        lastName: 'What is the employee\'s last name?',
+        firstName: 'What is the employee\'s first name? (1-30 Characters)',
+        lastName: 'What is the employee\'s last name? (1-30 Characters)',
         role: 'What is the employee\'s role?',
         manager: 'Who is the employee\'s manager?',
     },
@@ -30,8 +30,21 @@ const prompts = {
     updateEmployeeOptions: {
         which: 'Which employee would you like to update?'
     },
-    return: 'Return to the main menu (Choosing "No" will exit the application)'
+    return: 'Return to the main menu (Choosing "No" will exit the application)',
+    validate: 'Please provide a valid answer.',
+    validateStringLength: 'Response must be 1 to 30 characters in length.'
 }
+
+function validateInputText(input) {
+    if (isNaN(input) && input.length > 0 && input.length <= 30) {
+        return true;
+    } else if (!isNaN(input)) {
+        console.log('\n', prompts.validate);
+        return false;
+    }
+    console.log('\n', prompts.validateStringLength);
+    return false;
+};
 
 // Displays the base menu
 function menu() {
@@ -111,7 +124,10 @@ function addDepartment() {
         {
             type: 'input',
             name: 'name',
-            message: prompts.addDepartmentOptions.name
+            message: prompts.addDepartmentOptions.name,
+            validate: nameInput => {
+                validateInputText(nameInput);
+            }
         }
     ])
         .then(department => {
@@ -124,18 +140,29 @@ function addRole() {
     return inquirer.prompt([
         {
             type: 'input',
-            name: 'name',
-            message: prompts.addRoleOptions.name
+            name: 'title',
+            message: prompts.addRoleOptions.title,
+            validate: titleInput => {
+                validateInputText(titleInput);
+            }
         },
         {
             type: 'input',
             name: 'salary',
-            message: prompts.addRoleOptions.salary
+            message: prompts.addRoleOptions.salary,
+            validate: salaryInput => {
+                if (!isNaN(salaryInput)) {
+                    return true;
+                }
+                console.log('\n', prompts.validate);
+                return false;
+            }
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'department',
-            message: prompts.addRoleOptions.department
+            message: prompts.addRoleOptions.department,
+            choices: []
         }
     ])
         .then(role => {
@@ -149,22 +176,30 @@ function getEmployeeData() {
         {
             type: 'input',
             name: 'firstName',
-            message: prompts.addEmployeeOptions.firstName
+            message: prompts.addEmployeeOptions.firstName,
+            validate: nameInput => {
+                validateInputText(nameInput)
+            }
         },
         {
             type: 'input',
             name: 'lastName',
-            message: prompts.addEmployeeOptions.firstName
+            message: prompts.addEmployeeOptions.lastName,
+            validate: nameInput => {
+                validateInputText(nameInput)
+            }
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'role',
-            message: prompts.addEmployeeOptions.role
+            message: prompts.addEmployeeOptions.role,
+            choices: []
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'manager',
-            message: prompts.addEmployeeOptions.manager
+            message: prompts.addEmployeeOptions.manager,
+            choices: []
         }
     ])
 }
@@ -185,7 +220,7 @@ function chooseEmployee() {
             choices: []
         }
     ])
-    .then(updateEmployee);
+        .then(updateEmployee);
 }
 
 function updateEmployee(data) {
