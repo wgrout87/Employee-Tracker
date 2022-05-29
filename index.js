@@ -5,7 +5,7 @@ const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
 const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./routes/apiRoutes/departmentRoutes');
 const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./routes/apiRoutes/roleRoutes');
-const { displayEmployees, arrayOfManagers, getManagerId, postEmployee } = require('./routes/apiRoutes/employeeRoutes');
+const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee } = require('./routes/apiRoutes/employeeRoutes');
 require('console.table');
 
 // Object containing all of the prompt text
@@ -65,26 +65,27 @@ function menu() {
 
 // Function for running follow-up prompts based on the menu choice
 function optionHandler(choice) {
-    if (choice.menuOption === prompts.departments) {
-        displayDepartments().then(returnToMenu);
-    }
-    if (choice.menuOption === prompts.roles) {
-        displayRoles().then(returnToMenu);
-    }
-    if (choice.menuOption === prompts.employees) {
-        displayEmployees().then(returnToMenu);
-    }
-    if (choice.menuOption === prompts.addDepartment) {
-        addDepartment();
-    }
-    if (choice.menuOption === prompts.addRole) {
-        addRole();
-    }
-    if (choice.menuOption === prompts.addEmployee) {
-        addEmployee();
-    }
-    if (choice.menuOption === prompts.updateEmployee) {
-        chooseEmployee();
+    switch (choice.menuOption) {
+        case prompts.departments:
+            displayDepartments().then(returnToMenu);
+            break;
+        case prompts.roles:
+            displayRoles().then(returnToMenu);
+            break;
+        case prompts.employees:
+            displayEmployees().then(returnToMenu);
+            break;
+        case prompts.addDepartment:
+            addDepartment();
+            break;
+        case prompts.addRole:
+            addRole();
+            break;
+        case prompts.addEmployee:
+            addEmployee();
+            break;
+        case prompts.updateEmployee:
+            chooseEmployee();
     }
 }
 
@@ -170,7 +171,7 @@ function addRole() {
     })
 };
 
-function getEmployeeData() {
+function addEmployee() {
     return arrayOfRoles().then(rolesArray => {
         return arrayOfManagers().then(managersArray => {
             return inquirer.prompt([
@@ -204,19 +205,11 @@ function getEmployeeData() {
                 }
             ])
         })
-    });
-}
-
-function addEmployee() {
-    getEmployeeData()
+    })
         .then(employee => {
-            return getManagerId(employee.manager).then(managerId => {
-                console.log('Hello World');
-                console.log(getRoleId(employee.role));
+            return getEmployeeId(employee.manager).then(managerId => {
                 return getRoleId(employee.role).then(roleId => {
-                    console.log(roleId);
                     const newEmployee = new Employee(employee.firstName, employee.lastName, roleId, managerId);
-                    console.log(newEmployee.getValues());
                     return postEmployee(newEmployee);
                 })
             })
@@ -226,22 +219,39 @@ function addEmployee() {
 };
 
 function chooseEmployee() {
-    return inquirer.prompt([
-        {
-            type: 'list',
-            name: 'employeeChoice',
-            choices: []
-        }
-    ])
-        .then(updateEmployee);
-}
-
-function updateEmployee(data) {
-    getEmployeeData()
+    arrayOfEmployees().then(employeeArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: prompts.updateEmployeeOptions.which,
+                choices: employeeArray
+            }
+        ])
+    })
         .then(employee => {
-            console.log('Do something with this department data.', employee);
-            return returnToMenu();
+            return getEmployeeId(employee.name)
         })
+        .then(id => {
+            return arrayOfRoles().then(rolesArray => {
+                return inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: prompts.addEmployeeOptions.role,
+                        choices: rolesArray
+                    }
+                ])
+                    .then(data => {
+                        return getRoleId(data.role)
+                    })
+                    .then(roleId => {
+                        return updateEmployee('role', roleId, id)
+                    })
+                    .then(result => console.log(result))
+                    .then(returnToMenu)
+            })
+        });
 };
 
 // Function to initialize the application at the base menu

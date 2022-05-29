@@ -37,11 +37,15 @@ const arrayOfManagers = () => new Promise (resolve => {
         rows.forEach(element => {
             array.push(element.manager);
         });
+        array.push('None (This employee is a manager)');
         return resolve(array);
     })
 });
 
-const getManagerId = (managerName) => new Promise (resolve => {
+const getEmployeeId = (managerName) => new Promise (resolve => {
+    if (managerName === 'None (This employee is a manager)') {
+        return resolve(null);
+    }
     const sql = `SELECT id FROM employee
     WHERE CONCAT(first_name, ' ', last_name) = ?`;
     const params = managerName;
@@ -64,6 +68,36 @@ const postEmployee = (employee) => new Promise(resolve => {
         return resolve('Added a new employee.');
     });
 })
+
+const arrayOfEmployees = () => new Promise (resolve => {
+    const sql = `SELECT CONCAT(first_name, ' ', last_name) AS employee FROM employee`;
+    const array = [];
+
+    db.query(sql, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the employees. Please try again."];
+        }
+        rows.forEach(element => {
+            array.push(element.employee);
+        });
+        return resolve(array);
+    })
+});
+
+// Function for updating an employee - will work as intended when field is either 'role' or 'manager'
+const updateEmployee = (field, fieldId, employeeId) => new Promise (resolve => {
+    const sql = `UPDATE employee SET
+    ${field}_id = ?
+    WHERE id = ?`;
+    const array = [fieldId, employeeId];
+
+    db.query(sql, array, (err, result) => {
+        if (err) {
+            return ["There was a problem updating the employee's role. Please try again."];
+        }
+        return resolve('The employee was successfully updated.');
+    })
+});
 
 
 
@@ -113,6 +147,8 @@ module.exports = {
     employeeRoutes: router,
     displayEmployees,
     arrayOfManagers,
-    getManagerId,
-    postEmployee
+    getEmployeeId,
+    postEmployee,
+    arrayOfEmployees,
+    updateEmployee
 };

@@ -11,9 +11,13 @@
 --     LEFT JOIN department ON department_id = department.id
 --     ORDER BY department_id;
 
-SELECT CONCAT(first_name, ' ', last_name) AS manager
-    FROM employee
-    WHERE manager_id IS NULL;
+-- SELECT CONCAT(first_name, ' ', last_name) AS manager
+--     FROM employee
+--     WHERE manager_id IS NULL;
 
 -- SELECT id FROM employee
 --     WHERE CONCAT(first_name, ' ', last_name) = 'Peter Greenaway';
+
+UPDATE employee SET
+    role_id = 12
+    WHERE id = 23;
