@@ -39,18 +39,21 @@ const arrayOfDepartments = () => new Promise (resolve => {
     })
 });
 
-const departmentId = (departmentName) => new Promise (resolve => {
+const getDepartmentId = (departmentName) => new Promise (resolve => {
     const sql = `SELECT id FROM department WHERE name = ?`;
     const params = departmentName;
 
     db.query(sql, params, (err, rows) => {
         if (err) {
-            return ["There was a problem retrieving the roles. Please try again."];
+            return ["There was a problem retrieving the department ID. Please try again."];
         }
         return resolve(rows[0].id);
     })
 })
 
+
+
+// ROUTER OPTIONS FOR USE WITH A FRONT END
 // GET all departments
 router.get('/departments', (req, res) => {
     return displayDepartments()
@@ -71,5 +74,5 @@ module.exports = {
     displayDepartments,
     postDepartment,
     arrayOfDepartments,
-    departmentId
+    getDepartmentId
 };

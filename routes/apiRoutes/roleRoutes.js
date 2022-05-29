@@ -42,6 +42,21 @@ const arrayOfRoles = () => new Promise (resolve => {
     })
 });
 
+const getRoleId = (roleName) => new Promise (resolve => {
+    const sql = `SELECT id FROM role WHERE title = ?`;
+    const params = roleName;
+
+    db.query(sql, params, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the role ID. Please try again."];
+        }
+        return resolve(rows[0].id);
+    })
+})
+
+
+
+// ROUTER OPTIONS FOR USE WITH A FRONT END
 // GET all roles
 router.get('/roles', (req, res) => {
     return displayRoles()
@@ -68,4 +83,5 @@ module.exports = {
     displayRoles,
     postRole,
     arrayOfRoles,
+    getRoleId
 };

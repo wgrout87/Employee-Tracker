@@ -17,7 +17,8 @@ CREATE TABLE role (
 
 CREATE TABLE employee (
     id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(60),
+    first_name VARCHAR(30),
+    last_name VARCHAR(30),
     role_id INTEGER,
     manager_id INTEGER,
     FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE SET NULL,

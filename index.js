@@ -3,9 +3,9 @@ const db = require('./db/connection')
 const Department = require('./utils/Department');
 const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
-const { displayDepartments, postDepartment, arrayOfDepartments, departmentId } = require('./routes/apiRoutes/departmentRoutes');
-const { displayRoles, postRole, arrayOfRoles } = require('./routes/apiRoutes/roleRoutes');
-const { displayEmployees } = require('./routes/apiRoutes/employeeRoutes');
+const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./routes/apiRoutes/departmentRoutes');
+const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./routes/apiRoutes/roleRoutes');
+const { displayEmployees, arrayOfManagers, getManagerId, postEmployee } = require('./routes/apiRoutes/employeeRoutes');
 require('console.table');
 
 // Object containing all of the prompt text
@@ -159,7 +159,7 @@ function addRole() {
             }
         ])
             .then(data => {
-                return departmentId(data.department)
+                return getDepartmentId(data.department)
                     .then(id => {
                         const newRole = new Role(data.title, data.salary, id);
                         return postRole(newRole);
@@ -171,46 +171,58 @@ function addRole() {
 };
 
 function getEmployeeData() {
-    return arrayOfRoles().then(array => {
-        return inquirer.prompt([
-            {
-                type: 'input',
-                name: 'firstName',
-                message: prompts.addEmployeeOptions.firstName,
-                validate: nameInput => {
-                    return validateInputText(nameInput);
+    return arrayOfRoles().then(rolesArray => {
+        return arrayOfManagers().then(managersArray => {
+            return inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'firstName',
+                    message: prompts.addEmployeeOptions.firstName,
+                    validate: nameInput => {
+                        return validateInputText(nameInput);
+                    }
+                },
+                {
+                    type: 'input',
+                    name: 'lastName',
+                    message: prompts.addEmployeeOptions.lastName,
+                    validate: nameInput => {
+                        return validateInputText(nameInput);
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: prompts.addEmployeeOptions.role,
+                    choices: rolesArray
+                },
+                {
+                    type: 'list',
+                    name: 'manager',
+                    message: prompts.addEmployeeOptions.manager,
+                    choices: managersArray
                 }
-            },
-            {
-                type: 'input',
-                name: 'lastName',
-                message: prompts.addEmployeeOptions.lastName,
-                validate: nameInput => {
-                    return validateInputText(nameInput);
-                }
-            },
-            {
-                type: 'list',
-                name: 'role',
-                message: prompts.addEmployeeOptions.role,
-                choices: array
-            },
-            {
-                type: 'list',
-                name: 'manager',
-                message: prompts.addEmployeeOptions.manager,
-                choices: []
-            }
-        ])
+            ])
+        })
     });
 }
 
 function addEmployee() {
     getEmployeeData()
         .then(employee => {
-            console.log('Do something with this department data.', employee);
-            return returnToMenu();
+            return getManagerId(employee.manager).then(managerId => {
+                console.log('Hello World');
+                console.log(getRoleId(employee.role));
+                return getRoleId(employee.role).then(roleId => {
+                    console.log(roleId);
+                    const newEmployee = new Employee(employee.firstName, employee.lastName, roleId, managerId);
+                    console.log(newEmployee.getValues());
+                    return postEmployee(newEmployee);
+                })
+            })
         })
+        .then(result => console.log(result))
+        .then(returnToMenu);
 };
 
 function chooseEmployee() {

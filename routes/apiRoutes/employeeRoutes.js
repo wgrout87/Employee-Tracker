@@ -2,14 +2,19 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../db/connection');
 
-const displayEmployees = () => new Promise (resolve => {
-    const sql = `SELECT a.full_name AS 'Full Name',
-                role.title AS 'Role',
-                b.full_name AS 'Manager'
-                FROM employee a
-                LEFT JOIN role ON a.role_id = role.id
-                LEFT JOIN employee b ON a.manager_id = b.id
-                ORDER BY a.manager_id;`;
+const displayEmployees = () => new Promise(resolve => {
+    const sql = `SELECT a.id AS 'Employee ID',
+    a.first_name AS 'First Name',
+    a.last_name AS 'Last Name',
+    role.title AS 'Job Title',
+    department.name AS 'Department',
+    role.salary AS 'Salary',
+    CONCAT(b.first_name, ' ', b.last_name) AS 'Manager'
+    FROM employee a
+    LEFT JOIN role ON a.role_id = role.id
+    LEFT JOIN employee b ON a.manager_id = b.id
+    LEFT JOIN department ON department_id = department.id
+    ORDER BY department_id;`;
     db.query(sql, (err, rows) => {
         if (err) {
             return resolve(err.message);
@@ -18,6 +23,47 @@ const displayEmployees = () => new Promise (resolve => {
         return resolve(rows);
     })
 });
+
+const arrayOfManagers = () => new Promise (resolve => {
+    const sql = `SELECT CONCAT(first_name, ' ', last_name) AS manager
+    FROM employee
+    WHERE manager_id IS NULL`;
+    const array = [];
+
+    db.query(sql, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the managers. Please try again."];
+        }
+        rows.forEach(element => {
+            array.push(element.manager);
+        });
+        return resolve(array);
+    })
+});
+
+const getManagerId = (managerName) => new Promise (resolve => {
+    const sql = `SELECT id FROM employee
+    WHERE CONCAT(first_name, ' ', last_name) = ?`;
+    const params = managerName;
+
+    db.query(sql, params, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the manager ID. Please try again."];
+        }
+        return resolve(rows[0].id);
+    })
+});
+
+const postEmployee = (employee) => new Promise(resolve => {
+    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+    const params = employee.getValues();
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            return resolve(err.message);
+        }
+        return resolve('Added a new employee.');
+    });
+})
 
 
 
@@ -66,4 +112,7 @@ router.put('/employees/:id', (req, res) => {
 module.exports = {
     employeeRoutes: router,
     displayEmployees,
+    arrayOfManagers,
+    getManagerId,
+    postEmployee
 };
