@@ -23,7 +23,7 @@ const postRole = (role) => new Promise (resolve => {
         if (err) {;
             return resolve(err.message);
         }
-        return resolve(result);
+        return resolve('Added a new role.');
     });
 })
 
@@ -40,7 +40,7 @@ const arrayOfRoles = () => new Promise (resolve => {
         });
         return resolve(array);
     })
-})
+});
 
 // GET all roles
 router.get('/roles', (req, res) => {
@@ -67,5 +67,5 @@ module.exports = {
     roleRoutes: router,
     displayRoles,
     postRole,
-    arrayOfRoles
+    arrayOfRoles,
 };

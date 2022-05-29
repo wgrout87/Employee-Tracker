@@ -3,7 +3,7 @@ const db = require('./db/connection')
 const Department = require('./utils/Department');
 const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
-const { displayDepartments, postDepartment } = require('./routes/apiRoutes/departmentRoutes');
+const { displayDepartments, postDepartment, arrayOfDepartments, departmentId } = require('./routes/apiRoutes/departmentRoutes');
 const { displayRoles, postRole, arrayOfRoles } = require('./routes/apiRoutes/roleRoutes');
 const { displayEmployees } = require('./routes/apiRoutes/employeeRoutes');
 require('console.table');
@@ -129,40 +129,45 @@ function addDepartment() {
 };
 
 function addRole() {
-    return inquirer.prompt([
-        {
-            type: 'input',
-            name: 'title',
-            message: prompts.addRoleOptions.title,
-            validate: titleInput => {
-                return validateInputText(titleInput);
-            }
-        },
-        {
-            type: 'input',
-            name: 'salary',
-            message: prompts.addRoleOptions.salary,
-            validate: salaryInput => {
-                if (!isNaN(salaryInput)) {
-                    return true;
+    return arrayOfDepartments().then(departmentsArray => {
+        return inquirer.prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: prompts.addRoleOptions.title,
+                validate: titleInput => {
+                    return validateInputText(titleInput);
                 }
-                console.log('\n', prompts.validate);
-                return false;
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: prompts.addRoleOptions.salary,
+                validate: salaryInput => {
+                    if (!isNaN(salaryInput)) {
+                        return true;
+                    }
+                    console.log('\n', prompts.validate);
+                    return false;
+                }
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: prompts.addRoleOptions.department,
+                choices: departmentsArray
             }
-        },
-        {
-            type: 'list',
-            name: 'department',
-            message: prompts.addRoleOptions.department,
-            choices: []
-        }
-    ])
-    .then(data => {
-        const newRole = new Role(data.title, data.salary, data.department);
-        return postRole(newRole);
+        ])
+            .then(data => {
+                return departmentId(data.department)
+                    .then(id => {
+                        const newRole = new Role(data.title, data.salary, id);
+                        return postRole(newRole);
+                    })
+            })
+            .then(result => console.log(result))
+            .then(returnToMenu);
     })
-    .then(result => console.log(result))
-    .then(returnToMenu);
 };
 
 function getEmployeeData() {

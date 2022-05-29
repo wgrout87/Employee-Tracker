@@ -24,6 +24,33 @@ const postDepartment = (department) => new Promise(resolve => {
     return resolve('Added a new department.');
 });
 
+const arrayOfDepartments = () => new Promise (resolve => {
+    const sql = `SELECT name FROM department`;
+    const array = [];
+
+    db.query(sql, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the departments. Please try again."];
+        }
+        rows.forEach(element => {
+            array.push(element.name);
+        });
+        return resolve(array);
+    })
+});
+
+const departmentId = (departmentName) => new Promise (resolve => {
+    const sql = `SELECT id FROM department WHERE name = ?`;
+    const params = departmentName;
+
+    db.query(sql, params, (err, rows) => {
+        if (err) {
+            return ["There was a problem retrieving the roles. Please try again."];
+        }
+        return resolve(rows[0].id);
+    })
+})
+
 // GET all departments
 router.get('/departments', (req, res) => {
     return displayDepartments()
@@ -42,5 +69,7 @@ router.post('/departments', ({ body }, res) => {
 module.exports = {
     departmentRoutes: router,
     displayDepartments,
-    postDepartment
+    postDepartment,
+    arrayOfDepartments,
+    departmentId
 };
