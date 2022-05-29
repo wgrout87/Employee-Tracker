@@ -12,24 +12,20 @@ const displayEmployees = () => new Promise (resolve => {
                 ORDER BY a.manager_id;`;
     db.query(sql, (err, rows) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            return resolve(err.message);
         }
         console.table(rows);
         return resolve(rows);
     })
 });
 
+
+
+// ROUTER OPTIONS FOR USE WITH A FRONT END
 // GET all employees
 router.get('/employees', (req, res) => {
-    const sql = `SELECT * FROM employee`;
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(rows);
-    })
+    return displayEmployees()
+        .then(data => res.json(data));
 })
 
 // POST an employee
@@ -69,5 +65,5 @@ router.put('/employees/:id', (req, res) => {
 
 module.exports = {
     employeeRoutes: router,
-    displayEmployees
+    displayEmployees,
 };

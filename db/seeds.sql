@@ -18,15 +18,15 @@ VALUES
 
 INSERT INTO employee (full_name, role_id, manager_id)
 VALUES
-    ('James Fraser', 1, 1),
-    ('Jack London', 2, 2),
-    ('Robert Bruce', 3, 2),
-    ('Peter Greenaway', 3, 2),
+    ('James Fraser', 8, null),
+    ('Jack London', 2, null),
+    ('Robert Bruce', 3, null),
+    ('Peter Greenaway', 3, null),
     ('Derek Jarman', 5, 3),
     ('Paolo Pasolini', 7, 4),
     ('Heathcote Williams', 3, 2),
     ('Sandy Powell', 7, 4),
-    ('Emil Zola', 8, 1),
+    ('Emil Zola', 1, 1),
     ('Sissy Coalpits', 4, 3),
     ('Antoinette Capet', 3, 2),
     ('Samuel Delany', 5, 3),

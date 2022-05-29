@@ -4,9 +4,9 @@ const Department = require('./utils/Department');
 const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
 const { displayDepartments, postDepartment } = require('./routes/apiRoutes/departmentRoutes');
-// const {  } = require('./routes/apiRoutes/roleRoutes');
+const { displayRoles, postRole, arrayOfRoles } = require('./routes/apiRoutes/roleRoutes');
 const { displayEmployees } = require('./routes/apiRoutes/employeeRoutes');
-const res = require('express/lib/response');
+require('console.table');
 
 // Object containing all of the prompt text
 const prompts = {
@@ -69,7 +69,7 @@ function optionHandler(choice) {
         displayDepartments().then(returnToMenu);
     }
     if (choice.menuOption === prompts.roles) {
-        displayRoles();
+        displayRoles().then(returnToMenu);
     }
     if (choice.menuOption === prompts.employees) {
         displayEmployees().then(returnToMenu);
@@ -109,21 +109,6 @@ function returnToMenuHandler(data) {
     return init();
 };
 
-async function displayRoles() {
-    const sql = `SELECT title AS Role, salary AS Salary, department.name AS Department
-                FROM role
-                JOIN department ON role.department_id = department.id`;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        console.table(rows);
-        return returnToMenu();
-    })
-};
-
 function addDepartment() {
     return inquirer.prompt([
         {
@@ -135,7 +120,10 @@ function addDepartment() {
             }
         }
     ])
-        .then(postDepartment)
+        .then(data => {
+            const newDepartment = new Department(data.name);
+            return postDepartment(newDepartment);
+        })
         .then(result => console.log(result))
         .then(returnToMenu);
 };
@@ -169,43 +157,47 @@ function addRole() {
             choices: []
         }
     ])
-        .then(role => {
-            console.log('Do something with this role data.', role);
-            return returnToMenu();
-        })
+    .then(data => {
+        const newRole = new Role(data.title, data.salary, data.department);
+        return postRole(newRole);
+    })
+    .then(result => console.log(result))
+    .then(returnToMenu);
 };
 
 function getEmployeeData() {
-    return inquirer.prompt([
-        {
-            type: 'input',
-            name: 'firstName',
-            message: prompts.addEmployeeOptions.firstName,
-            validate: nameInput => {
-                return validateInputText(nameInput);
+    return arrayOfRoles().then(array => {
+        return inquirer.prompt([
+            {
+                type: 'input',
+                name: 'firstName',
+                message: prompts.addEmployeeOptions.firstName,
+                validate: nameInput => {
+                    return validateInputText(nameInput);
+                }
+            },
+            {
+                type: 'input',
+                name: 'lastName',
+                message: prompts.addEmployeeOptions.lastName,
+                validate: nameInput => {
+                    return validateInputText(nameInput);
+                }
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: prompts.addEmployeeOptions.role,
+                choices: array
+            },
+            {
+                type: 'list',
+                name: 'manager',
+                message: prompts.addEmployeeOptions.manager,
+                choices: []
             }
-        },
-        {
-            type: 'input',
-            name: 'lastName',
-            message: prompts.addEmployeeOptions.lastName,
-            validate: nameInput => {
-                return validateInputText(nameInput);
-            }
-        },
-        {
-            type: 'list',
-            name: 'role',
-            message: prompts.addEmployeeOptions.role,
-            choices: []
-        },
-        {
-            type: 'list',
-            name: 'manager',
-            message: prompts.addEmployeeOptions.manager,
-            choices: []
-        }
-    ])
+        ])
+    });
 }
 
 function addEmployee() {
