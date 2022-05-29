@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const { departmentRoutes } = require('./departmentRoutes');
+const { employeeRoutes } = require('./employeeRoutes');
 
-router.use(require('./departmentRoutes'));
+router.use(departmentRoutes);
 router.use(require('./roleRoutes'));
-router.use(require('./employeeRoutes'));
+router.use(employeeRoutes);
 
 module.exports = router;

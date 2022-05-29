@@ -1,7 +1,12 @@
 const inquirer = require('inquirer');
-// const db = require('./db/connection');
+const db = require('./db/connection')
+const Department = require('./utils/Department');
 const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
+const { displayDepartments, postDepartment } = require('./routes/apiRoutes/departmentRoutes');
+// const {  } = require('./routes/apiRoutes/roleRoutes');
+const { displayEmployees } = require('./routes/apiRoutes/employeeRoutes');
+const res = require('express/lib/response');
 
 // Object containing all of the prompt text
 const prompts = {
@@ -61,13 +66,13 @@ function menu() {
 // Function for running follow-up prompts based on the menu choice
 function optionHandler(choice) {
     if (choice.menuOption === prompts.departments) {
-        displayDepartments();
+        displayDepartments().then(returnToMenu);
     }
     if (choice.menuOption === prompts.roles) {
         displayRoles();
     }
     if (choice.menuOption === prompts.employees) {
-        displayEmployees();
+        displayEmployees().then(returnToMenu);
     }
     if (choice.menuOption === prompts.addDepartment) {
         addDepartment();
@@ -104,19 +109,19 @@ function returnToMenuHandler(data) {
     return init();
 };
 
-function displayDepartments() {
-    console.log('Fetch request needed');
-    return returnToMenu();
-};
+async function displayRoles() {
+    const sql = `SELECT title AS Role, salary AS Salary, department.name AS Department
+                FROM role
+                JOIN department ON role.department_id = department.id`;
 
-function displayRoles() {
-    console.log('Fetch request needed');
-    return returnToMenu();
-};
-
-function displayEmployees() {
-    console.log('Fetch request needed');
-    return returnToMenu();
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        console.table(rows);
+        return returnToMenu();
+    })
 };
 
 function addDepartment() {
@@ -126,14 +131,13 @@ function addDepartment() {
             name: 'name',
             message: prompts.addDepartmentOptions.name,
             validate: nameInput => {
-                validateInputText(nameInput);
+                return validateInputText(nameInput);
             }
         }
     ])
-        .then(department => {
-            console.log('Do something with this department data.', department);
-            return returnToMenu();
-        })
+        .then(postDepartment)
+        .then(result => console.log(result))
+        .then(returnToMenu);
 };
 
 function addRole() {
@@ -143,7 +147,7 @@ function addRole() {
             name: 'title',
             message: prompts.addRoleOptions.title,
             validate: titleInput => {
-                validateInputText(titleInput);
+                return validateInputText(titleInput);
             }
         },
         {
@@ -178,7 +182,7 @@ function getEmployeeData() {
             name: 'firstName',
             message: prompts.addEmployeeOptions.firstName,
             validate: nameInput => {
-                validateInputText(nameInput)
+                return validateInputText(nameInput);
             }
         },
         {
@@ -186,7 +190,7 @@ function getEmployeeData() {
             name: 'lastName',
             message: prompts.addEmployeeOptions.lastName,
             validate: nameInput => {
-                validateInputText(nameInput)
+                return validateInputText(nameInput);
             }
         },
         {

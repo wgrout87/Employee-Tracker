@@ -1,32 +1,49 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../db/connection');
+require('console.table');
 
-// GET all departments
-router.get('/departments', (req, res) => {
-    const sql = `SELECT * FROM department`;
+const displayDepartments = () => new Promise(resolve => {
+    const sql = `SELECT name AS Departments FROM department`;
     db.query(sql, (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json(rows);
+        console.table(rows);
+        return resolve(rows);
     })
-})
+});
 
-// POST a department
-router.post('/departments', ({ body }, res) => {
+const postDepartment = (department) => new Promise(resolve => {
     const sql = `INSERT INTO department (name) VALUES (?)`;
-    const params = [body.name];
+    const params = [department.name];
     db.query(sql, params, (err, result) => {
         if (err) {
             res.status(400).json({ error: err.message });
             return;
         }
-        res.json({
-            message: 'Department added to database!\n'
-        });
     });
+    return resolve('Added a new department.');
 });
 
-module.exports = router;
+// GET all departments
+router.get('/departments', (req, res) => {
+    return displayDepartments()
+        .then(data => res.json(data));
+})
+
+// POST a department
+router.post('/departments', ({ body }, res) => {
+    postDepartment(body).then(data => {
+        res.json({
+            message: data
+        });
+    })
+});
+
+module.exports = {
+    departmentRoutes: router,
+    displayDepartments,
+    postDepartment
+};

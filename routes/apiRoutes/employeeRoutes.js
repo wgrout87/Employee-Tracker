@@ -2,6 +2,24 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../db/connection');
 
+const displayEmployees = () => new Promise (resolve => {
+    const sql = `SELECT a.full_name AS 'Full Name',
+                role.title AS 'Role',
+                b.full_name AS 'Manager'
+                FROM employee a
+                LEFT JOIN role ON a.role_id = role.id
+                LEFT JOIN employee b ON a.manager_id = b.id
+                ORDER BY a.manager_id;`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        console.table(rows);
+        return resolve(rows);
+    })
+});
+
 // GET all employees
 router.get('/employees', (req, res) => {
     const sql = `SELECT * FROM employee`;
@@ -49,4 +67,7 @@ router.put('/employees/:id', (req, res) => {
     })
 })
 
-module.exports = router;
+module.exports = {
+    employeeRoutes: router,
+    displayEmployees
+};

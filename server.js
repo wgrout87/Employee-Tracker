@@ -10,5 +10,5 @@ app.use(express.json());
 app.use('/api', apiRoutes);
 
 app.listen(PORT, () => {
-    // init();
+    init();
 });
