@@ -49,9 +49,19 @@ const getDepartmentId = (departmentName) => new Promise (resolve => {
     })
 })
 
+const deleteDep = (departmentName) => new Promise (resolve => {
+    const sql = `DELETE FROM department WHERE name = ?`;
+    const params = departmentName;
+
+    db.query(sql, params, (err, rows) => {
+        return resolve('Deleted the ' + departmentName + ' department');
+    })
+})
+
 module.exports = {
     displayDepartments,
     postDepartment,
     arrayOfDepartments,
-    getDepartmentId
+    getDepartmentId,
+    deleteDep
 };

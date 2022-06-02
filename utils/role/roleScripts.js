@@ -1,6 +1,6 @@
 const db = require('../../db/connection');
 
-const displayRoles = () => new Promise (resolve => {
+const displayRoles = () => new Promise(resolve => {
     const sql = `SELECT title AS Role, salary AS Salary, department.name AS Department
                 FROM role
                 JOIN department ON role.department_id = department.id`;
@@ -14,18 +14,19 @@ const displayRoles = () => new Promise (resolve => {
     })
 });
 
-const postRole = (role) => new Promise (resolve => {
+const postRole = (role) => new Promise(resolve => {
     const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
     const params = role.getValues();
     db.query(sql, params, (err, result) => {
-        if (err) {;
+        if (err) {
+            ;
             return resolve(err.message);
         }
         return resolve('Added a new role.');
     });
 })
 
-const arrayOfRoles = () => new Promise (resolve => {
+const arrayOfRoles = () => new Promise(resolve => {
     const sql = `SELECT title FROM role`;
     const array = [];
 
@@ -40,7 +41,7 @@ const arrayOfRoles = () => new Promise (resolve => {
     })
 });
 
-const getRoleId = (roleName) => new Promise (resolve => {
+const getRoleId = (roleName) => new Promise(resolve => {
     const sql = `SELECT id FROM role WHERE title = ?`;
     const params = roleName;
 
@@ -52,9 +53,39 @@ const getRoleId = (roleName) => new Promise (resolve => {
     })
 })
 
+const updateRoleDepartmentDb = (departmentId, roleId) => new Promise(resolve => {
+    const sql = `UPDATE role SET
+    department_id = ?
+    WHERE id = ?`;
+    const params = [departmentId, roleId];
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            return ["There was a problem updating the role. Please try again."];
+        }
+        return resolve('The role was successfully updated.');
+    })
+})
+
+const updateRoleSalaryDb = (salary, roleId) => new Promise(resolve => {
+    const sql = `UPDATE role SET
+    salary = ?
+    WHERE id = ?`;
+    const params = [salary, roleId];
+
+    db.query(sql, params, (err, result) => {
+        if (err) {
+            return ["There was a problem updating the role. Please try again."];
+        }
+        return resolve('The role was successfully updated.');
+    })
+})
+
 module.exports = {
     displayRoles,
     postRole,
     arrayOfRoles,
-    getRoleId
+    getRoleId,
+    updateRoleDepartmentDb,
+    updateRoleSalaryDb
 };

@@ -87,9 +87,9 @@ const updateEmployee = (field, fieldId, employeeId) => new Promise (resolve => {
     const sql = `UPDATE employee SET
     ${field}_id = ?
     WHERE id = ?`;
-    const array = [fieldId, employeeId];
+    const params = [fieldId, employeeId];
 
-    db.query(sql, array, (err, result) => {
+    db.query(sql, params, (err, result) => {
         if (err) {
             return ["There was a problem updating the employee's role. Please try again."];
         }

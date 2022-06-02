@@ -29,16 +29,20 @@
 --     FROM employee
 --     LEFT JOIN role ON role_id = role.id;
 
-SELECT a.id AS 'Employee ID',
-    a.first_name AS 'First Name',
-    a.last_name AS 'Last Name',
-    role.title AS 'Job Title',
-    department.name AS 'Department',
-    role.salary AS 'Salary',
-    CONCAT(b.first_name, ' ', b.last_name) AS 'Manager'
-    FROM employee a
-    LEFT JOIN role ON a.role_id = role.id
-    LEFT JOIN employee b ON a.manager_id = b.id
-    LEFT JOIN department ON department_id = department.id
-    WHERE department.name = 'Acquisitions'
-    ORDER BY department_id;
+-- SELECT a.id AS 'Employee ID',
+--     a.first_name AS 'First Name',
+--     a.last_name AS 'Last Name',
+--     role.title AS 'Job Title',
+--     department.name AS 'Department',
+--     role.salary AS 'Salary',
+--     CONCAT(b.first_name, ' ', b.last_name) AS 'Manager'
+--     FROM employee a
+--     LEFT JOIN role ON a.role_id = role.id
+--     LEFT JOIN employee b ON a.manager_id = b.id
+--     LEFT JOIN department ON department_id = department.id
+--     WHERE department.name = 'Acquisitions'
+--     ORDER BY department_id;
+
+UPDATE role SET
+    department_id = 8
+    WHERE id = 13;

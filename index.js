@@ -3,9 +3,10 @@ const db = require('./db/connection')
 const Department = require('./utils/constructors/Department');
 const Employee = require('./utils/constructors/Employee');
 const Role = require('./utils/constructors/Role');
-const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./utils/department/departmentScripts');
-const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./utils/role/roleScripts');
+const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId, deleteDep } = require('./utils/department/departmentScripts');
+const { displayRoles, postRole, arrayOfRoles, getRoleId, updateRoleDepartmentDb, updateRoleSalaryDb } = require('./utils/role/roleScripts');
 const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment } = require('./utils/employee/employeeScripts');
+const { response } = require('express');
 require('console.table');
 
 // Object containing all of the prompt text
@@ -21,8 +22,8 @@ const prompts = {
     addRole: 'Add a role',
     addRoleOptions: {
         title: 'What is the new role? (1-30 Characters)',
-        salary: 'What is the salary for the new role? (Must be a number)',
-        department: 'What is the department for the new role?'
+        salary: 'What is the salary for the role? (Must be a number)',
+        department: 'What is the department for the role?'
     },
     addEmployee: 'Add an employee',
     addEmployeeOptions: {
@@ -30,6 +31,11 @@ const prompts = {
         lastName: 'What is the employee\'s last name? (1-30 Characters)',
         role: 'What is the employee\'s role?',
         manager: 'Who is the employee\'s manager?',
+    },
+    updateRole: 'Update a role',
+    updateRoleOptions: {
+        which: 'Which role would you like to update?',
+        propertyChoice: 'Would you like to update the department or the salary?'
     },
     updateEmployee: 'Update an employee role',
     updateEmployeeOptions: {
@@ -76,7 +82,7 @@ function menu() {
             type: 'list',
             name: 'menuOption',
             message: prompts.options,
-            choices: [prompts.departments, prompts.roles, prompts.employees, prompts.addDepartment, prompts.addRole, prompts.addEmployee, prompts.updateEmployee, prompts.updateEmployeeManagers, prompts.viewByManager, prompts.viewByDepartment, prompts.deleteDepartment, prompts.deleteRole, prompts.deleteEmployee]
+            choices: [prompts.departments, prompts.roles, prompts.employees, prompts.addDepartment, prompts.addRole, prompts.addEmployee, prompts.updateRole, prompts.updateEmployee, prompts.updateEmployeeManagers, prompts.viewByManager, prompts.viewByDepartment, prompts.deleteDepartment, prompts.deleteRole, prompts.deleteEmployee]
         }
     ])
 };
@@ -102,6 +108,9 @@ function optionHandler(choice) {
         case prompts.addEmployee:
             addEmployee();
             break;
+        case prompts.updateRole:
+            updateRole();
+            break;
         case prompts.updateEmployee:
             updateEmployeeRole();
             break;
@@ -109,14 +118,13 @@ function optionHandler(choice) {
             updateEmployeeManager();
             break;
         case prompts.viewByManager:
-            chooseManager();
+            displayByManager();
             break;
         case prompts.viewByDepartment:
-            chooseDepartment();
+            displayByDepartment();
             break;
         case prompts.deleteDepartment:
-            console.log('Delete a department');
-            returnToMenu();
+            deleteDepartment();
             break;
         case prompts.deleteRole:
             console.log('Delete a role');
@@ -169,7 +177,7 @@ function addDepartment() {
 };
 
 function addRole() {
-    return arrayOfDepartments().then(departmentsArray => {
+    arrayOfDepartments().then(departmentsArray => {
         return inquirer.prompt([
             {
                 type: 'input',
@@ -211,7 +219,7 @@ function addRole() {
 };
 
 function addEmployee() {
-    return arrayOfRoles().then(rolesArray => {
+    arrayOfRoles().then(rolesArray => {
         return arrayOfManagers().then(managersArray => {
             return inquirer.prompt([
                 {
@@ -256,6 +264,87 @@ function addEmployee() {
         .then(result => console.log(result))
         .then(returnToMenu);
 };
+
+function updateRole() {
+    arrayOfRoles()
+        .then(rolesArray => {
+            return arrayOfDepartments().then(departmentsArray => {
+                return inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: prompts.updateRoleOptions.which,
+                        choices: rolesArray
+                    },
+                    {
+                        type: 'list',
+                        name: 'choice',
+                        message: prompts.updateRoleOptions.propertyChoice,
+                        choices: ['Department', 'Salary']
+                    }
+                ])
+                    .then(answer => {
+                        switch (answer.choice) {
+                            case 'Department':
+                                updateRoleDepartment(answer.role, departmentsArray);
+                                break;
+                            case 'Salary':
+                                updateRoleSalary(answer.role);
+                                break;
+                        }
+                    })
+            })
+        })
+};
+
+function updateRoleDepartment(roleName, departmentsArray) {
+    return inquirer.prompt([
+        {
+            type: 'list',
+            name: 'department',
+            message: prompts.updateRoleOptions.which,
+            choices: departmentsArray
+        }
+    ])
+        .then(data => {
+            return getDepartmentId(data.department)
+                .then(departmentId => {
+                    getRoleId(roleName).then(roleId => {
+                        return updateRoleDepartmentDb(departmentId, roleId);
+                    })
+                        .then(response => {
+                            console.log(response);
+                            return returnToMenu();
+                        })
+                });
+        })
+};
+
+function updateRoleSalary(roleName) {
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'salary',
+            message: prompts.addRoleOptions.salary,
+            validate: salaryInput => {
+                if (!isNaN(salaryInput)) {
+                    return true;
+                }
+                console.log('\n', prompts.validate);
+                return false;
+            }
+        }
+    ])
+        .then(data => {
+            getRoleId(roleName).then(roleId => {
+                return updateRoleSalaryDb(data.salary, roleId);
+            })
+                .then(response => {
+                    console.log(response);
+                    return returnToMenu();
+                })
+        })
+}
 
 function updateEmployeeRole() {
     arrayOfEmployees().then(employeeArray => {
@@ -329,8 +418,8 @@ function updateEmployeeManager() {
         });
 };
 
-function chooseManager() {
-    return arrayOfManagers().then(managersArray => {
+function displayByManager() {
+    arrayOfManagers().then(managersArray => {
         managersArray.pop();
         return inquirer.prompt([
             {
@@ -348,8 +437,8 @@ function chooseManager() {
     });
 };
 
-function chooseDepartment() {
-    return arrayOfDepartments().then(departmentsArray => {
+function displayByDepartment() {
+    arrayOfDepartments().then(departmentsArray => {
         return inquirer.prompt([
             {
                 type: 'list',
@@ -363,8 +452,26 @@ function chooseDepartment() {
             })
             .then(rows => console.table(rows))
             .then(returnToMenu)
-    })
-}
+    });
+};
+
+function deleteDepartment() {
+    arrayOfDepartments().then(departmentsArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: prompts.deleteDepartmentOptions.which,
+                choices: departmentsArray
+            }
+        ])
+            .then(data => {
+                return deleteDep(data.department);
+            })
+            .then(message => console.log(message))
+            .then(returnToMenu)
+    });
+};
 
 // Function to initialize the application at the base menu
 function init() {
