@@ -1,5 +1,3 @@
-const express = require('express');
-const router = express.Router();
 const db = require('../../db/connection');
 
 const displayRoles = () => new Promise (resolve => {
@@ -54,32 +52,7 @@ const getRoleId = (roleName) => new Promise (resolve => {
     })
 })
 
-
-
-// ROUTER OPTIONS FOR USE WITH A FRONT END
-// GET all roles
-router.get('/roles', (req, res) => {
-    return displayRoles()
-        .then(data => res.json(data));
-})
-
-// POST a role
-router.post('/roles', ({ body }, res) => {
-    const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
-    const params = [body.title, body.salary, body.department_id];
-    db.query(sql, params, (err, result) => {
-        if (err) {
-            res.status(400).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: 'Role added to database!\n'
-        });
-    });
-});
-
 module.exports = {
-    roleRoutes: router,
     displayRoles,
     postRole,
     arrayOfRoles,

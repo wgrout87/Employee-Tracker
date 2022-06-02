@@ -1,4 +1,4 @@
-const Department = require('../utils/Department');
+const Department = require('../utils/constructors/Department');
 
 test('Create an department object', () => {
     const department = new Department('Fake Department');

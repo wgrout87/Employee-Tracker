@@ -1,4 +1,4 @@
-const Role = require('../utils/Role');
+const Role = require('../utils/constructors/Role');
 
 test('Create a role object', () => {
     const role = new Role('Big Boss', 1000000, 5);

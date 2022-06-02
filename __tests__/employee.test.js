@@ -1,4 +1,4 @@
-const Employee = require('../utils/Employee');
+const Employee = require('../utils/constructors/Employee');
 
 test('Create an employee object', () => {
     const employee = new Employee('Chet', 'McMasterson', 3, 4);

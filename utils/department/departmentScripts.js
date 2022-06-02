@@ -1,5 +1,3 @@
-const express = require('express');
-const router = express.Router();
 const db = require('../../db/connection');
 
 const displayDepartments = () => new Promise(resolve => {
@@ -51,26 +49,7 @@ const getDepartmentId = (departmentName) => new Promise (resolve => {
     })
 })
 
-
-
-// ROUTER OPTIONS FOR USE WITH A FRONT END
-// GET all departments
-router.get('/departments', (req, res) => {
-    return displayDepartments()
-        .then(data => res.json(data));
-})
-
-// POST a department
-router.post('/departments', ({ body }, res) => {
-    postDepartment(body).then(data => {
-        res.json({
-            message: data
-        });
-    })
-});
-
 module.exports = {
-    departmentRoutes: router,
     displayDepartments,
     postDepartment,
     arrayOfDepartments,

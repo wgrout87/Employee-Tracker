@@ -1,11 +1,11 @@
 const inquirer = require('inquirer');
 const db = require('./db/connection')
-const Department = require('./utils/Department');
-const Employee = require('./utils/Employee');
-const Role = require('./utils/Role');
-const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./routes/apiRoutes/departmentRoutes');
-const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./routes/apiRoutes/roleRoutes');
-const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment } = require('./routes/apiRoutes/employeeRoutes');
+const Department = require('./utils/constructors/Department');
+const Employee = require('./utils/constructors/Employee');
+const Role = require('./utils/constructors/Role');
+const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./utils/department/departmentScripts');
+const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./utils/role/roleScripts');
+const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment } = require('./utils/employee/employeeScripts');
 require('console.table');
 
 // Object containing all of the prompt text
@@ -331,6 +331,7 @@ function updateEmployeeManager() {
 
 function chooseManager() {
     return arrayOfManagers().then(managersArray => {
+        managersArray.pop();
         return inquirer.prompt([
             {
                 type: 'list',
