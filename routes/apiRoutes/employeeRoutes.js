@@ -99,6 +99,41 @@ const updateEmployee = (field, fieldId, employeeId) => new Promise (resolve => {
     })
 });
 
+const displayEmployeesbyManager = (managerName) => new Promise (resolve => {
+    const sql = `SELECT a.first_name AS 'First Name',
+    a.last_name AS 'Last Name',
+    CONCAT(b.first_name, ' ', b.last_name) AS 'Manager'
+    FROM employee a
+    LEFT JOIN employee b ON a.manager_id = b.id
+    WHERE CONCAT(b.first_name, ' ', b.last_name) = ?`;
+    const params = managerName;
+
+    db.query(sql, params, (err, rows) => {
+        return resolve(rows);
+    })
+});
+
+const displayEmployeesbyDepartment = (departmentName) => new Promise (resolve => {
+    const sql = `SELECT a.id AS 'Employee ID',
+    a.first_name AS 'First Name',
+    a.last_name AS 'Last Name',
+    role.title AS 'Job Title',
+    department.name AS 'Department',
+    role.salary AS 'Salary',
+    CONCAT(b.first_name, ' ', b.last_name) AS 'Manager'
+    FROM employee a
+    LEFT JOIN role ON a.role_id = role.id
+    LEFT JOIN employee b ON a.manager_id = b.id
+    LEFT JOIN department ON department_id = department.id
+    WHERE department.name = ?
+    ORDER BY department_id`;
+    const params = departmentName;
+
+    db.query(sql, params, (err, rows) => {
+        return resolve(rows);
+    })
+});
+
 
 
 // ROUTER OPTIONS FOR USE WITH A FRONT END
@@ -150,5 +185,7 @@ module.exports = {
     getEmployeeId,
     postEmployee,
     arrayOfEmployees,
-    updateEmployee
+    updateEmployee,
+    displayEmployeesbyManager,
+    displayEmployeesbyDepartment
 };

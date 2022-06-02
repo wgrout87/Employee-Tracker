@@ -5,7 +5,7 @@ const Employee = require('./utils/Employee');
 const Role = require('./utils/Role');
 const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId } = require('./routes/apiRoutes/departmentRoutes');
 const { displayRoles, postRole, arrayOfRoles, getRoleId } = require('./routes/apiRoutes/roleRoutes');
-const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee } = require('./routes/apiRoutes/employeeRoutes');
+const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment } = require('./routes/apiRoutes/employeeRoutes');
 require('console.table');
 
 // Object containing all of the prompt text
@@ -35,6 +35,24 @@ const prompts = {
     updateEmployeeOptions: {
         which: 'Which employee would you like to update?'
     },
+    updateEmployeeManagers: 'Update employee managers',
+    viewByManager: 'View employees by manager',
+    viewByDepartment: 'View employees by department',
+    viewByDepartmentOptions: {
+        which: 'Which department?'
+    },
+    deleteDepartment: 'Delete a department',
+    deleteDepartmentOptions: {
+        which: 'Which department would you like to delete?'
+    },
+    deleteRole: 'Delete a role',
+    deleteRoleOptions: {
+        which: 'Which role would you like to delete?'
+    },
+    deleteEmployee: 'Delete an employee',
+    deleteEmployeeOptions: {
+        which: 'Which employee would you like to delete?'
+    },
     return: 'Return to the main menu (Choosing "No" will exit the application)',
     validate: 'Please provide a valid answer.',
     validateStringLength: 'Response must be 1 to 30 characters in length.'
@@ -58,7 +76,7 @@ function menu() {
             type: 'list',
             name: 'menuOption',
             message: prompts.options,
-            choices: [prompts.departments, prompts.roles, prompts.employees, prompts.addDepartment, prompts.addRole, prompts.addEmployee, prompts.updateEmployee]
+            choices: [prompts.departments, prompts.roles, prompts.employees, prompts.addDepartment, prompts.addRole, prompts.addEmployee, prompts.updateEmployee, prompts.updateEmployeeManagers, prompts.viewByManager, prompts.viewByDepartment, prompts.deleteDepartment, prompts.deleteRole, prompts.deleteEmployee]
         }
     ])
 };
@@ -85,7 +103,28 @@ function optionHandler(choice) {
             addEmployee();
             break;
         case prompts.updateEmployee:
-            chooseEmployee();
+            updateEmployeeRole();
+            break;
+        case prompts.updateEmployeeManagers:
+            updateEmployeeManager();
+            break;
+        case prompts.viewByManager:
+            chooseManager();
+            break;
+        case prompts.viewByDepartment:
+            chooseDepartment();
+            break;
+        case prompts.deleteDepartment:
+            console.log('Delete a department');
+            returnToMenu();
+            break;
+        case prompts.deleteRole:
+            console.log('Delete a role');
+            returnToMenu();
+            break;
+        case prompts.deleteEmployee:
+            console.log('Delete an employee');
+            returnToMenu();
     }
 }
 
@@ -218,7 +257,7 @@ function addEmployee() {
         .then(returnToMenu);
 };
 
-function chooseEmployee() {
+function updateEmployeeRole() {
     arrayOfEmployees().then(employeeArray => {
         return inquirer.prompt([
             {
@@ -253,6 +292,78 @@ function chooseEmployee() {
             })
         });
 };
+
+function updateEmployeeManager() {
+    arrayOfEmployees().then(employeeArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'name',
+                message: prompts.updateEmployeeOptions.which,
+                choices: employeeArray
+            }
+        ])
+    })
+        .then(employee => {
+            return getEmployeeId(employee.name)
+        })
+        .then(id => {
+            return arrayOfManagers().then(managersArray => {
+                return inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'manager',
+                        message: prompts.addEmployeeOptions.manager,
+                        choices: managersArray
+                    }
+                ])
+                    .then(data => {
+                        return getEmployeeId(data.manager)
+                    })
+                    .then(managerId => {
+                        return updateEmployee('manager', managerId, id)
+                    })
+                    .then(result => console.log(result))
+                    .then(returnToMenu)
+            })
+        });
+};
+
+function chooseManager() {
+    return arrayOfManagers().then(managersArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'manager',
+                message: prompts.addEmployeeOptions.manager,
+                choices: managersArray
+            }
+        ])
+            .then(data => {
+                return displayEmployeesbyManager(data.manager);
+            })
+            .then(rows => console.table(rows))
+            .then(returnToMenu)
+    });
+};
+
+function chooseDepartment() {
+    return arrayOfDepartments().then(departmentsArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'department',
+                message: prompts.viewByDepartmentOptions.which,
+                choices: departmentsArray
+            }
+        ])
+            .then(data => {
+                return displayEmployeesbyDepartment(data.department);
+            })
+            .then(rows => console.table(rows))
+            .then(returnToMenu)
+    })
+}
 
 // Function to initialize the application at the base menu
 function init() {
