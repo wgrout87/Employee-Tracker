@@ -132,6 +132,15 @@ const displayEmployeesbyDepartment = (departmentName) => new Promise (resolve =>
     })
 });
 
+const deleteEmp = (employeeName) => new Promise (resolve => {
+    const sql = `DELETE FROM employee WHERE CONCAT(first_name, ' ', last_name) = ?`;
+    const params = employeeName;
+
+    db.query(sql, params, (err, rows) => {
+        return resolve('Deleted ' + employeeName);
+    })
+})
+
 module.exports = {
     displayEmployees,
     arrayOfManagers,
@@ -140,5 +149,6 @@ module.exports = {
     arrayOfEmployees,
     updateEmployee,
     displayEmployeesbyManager,
-    displayEmployeesbyDepartment
+    displayEmployeesbyDepartment,
+    deleteEmp
 };

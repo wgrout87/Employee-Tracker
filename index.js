@@ -4,8 +4,8 @@ const Department = require('./utils/constructors/Department');
 const Employee = require('./utils/constructors/Employee');
 const Role = require('./utils/constructors/Role');
 const { displayDepartments, postDepartment, arrayOfDepartments, getDepartmentId, deleteDep } = require('./utils/department/departmentScripts');
-const { displayRoles, postRole, arrayOfRoles, getRoleId, updateRoleDepartmentDb, updateRoleSalaryDb } = require('./utils/role/roleScripts');
-const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment } = require('./utils/employee/employeeScripts');
+const { displayRoles, postRole, arrayOfRoles, getRoleId, updateRoleDepartmentDb, updateRoleSalaryDb, deleteRole } = require('./utils/role/roleScripts');
+const { displayEmployees, arrayOfManagers, getEmployeeId, postEmployee, arrayOfEmployees, updateEmployee, displayEmployeesbyManager, displayEmployeesbyDepartment, deleteEmp } = require('./utils/employee/employeeScripts');
 const { response } = require('express');
 require('console.table');
 
@@ -127,12 +127,10 @@ function optionHandler(choice) {
             deleteDepartment();
             break;
         case prompts.deleteRole:
-            console.log('Delete a role');
-            returnToMenu();
+            deleteARole();
             break;
         case prompts.deleteEmployee:
-            console.log('Delete an employee');
-            returnToMenu();
+            deleteEmployee();
     }
 }
 
@@ -467,6 +465,42 @@ function deleteDepartment() {
         ])
             .then(data => {
                 return deleteDep(data.department);
+            })
+            .then(message => console.log(message))
+            .then(returnToMenu)
+    });
+};
+
+function deleteARole() {
+    arrayOfRoles().then(rolesArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'role',
+                message: prompts.deleteRoleOptions.which,
+                choices: rolesArray
+            }
+        ])
+            .then(data => {
+                return deleteRole(data.role);
+            })
+            .then(message => console.log(message))
+            .then(returnToMenu)
+    });
+};
+
+function deleteEmployee() {
+    arrayOfEmployees().then(employeesArray => {
+        return inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: prompts.deleteEmployeeOptions.which,
+                choices: employeesArray
+            }
+        ])
+            .then(data => {
+                return deleteEmp(data.employee);
             })
             .then(message => console.log(message))
             .then(returnToMenu)

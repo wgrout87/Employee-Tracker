@@ -79,7 +79,16 @@ const updateRoleSalaryDb = (salary, roleId) => new Promise(resolve => {
         }
         return resolve('The role was successfully updated.');
     })
-})
+});
+
+const deleteRole = (roleName) => new Promise (resolve => {
+    const sql = `DELETE FROM role WHERE title = ?`;
+    const params = roleName;
+
+    db.query(sql, params, (err, rows) => {
+        return resolve('Deleted the ' + roleName + ' role');
+    })
+});
 
 module.exports = {
     displayRoles,
@@ -87,5 +96,6 @@ module.exports = {
     arrayOfRoles,
     getRoleId,
     updateRoleDepartmentDb,
-    updateRoleSalaryDb
+    updateRoleSalaryDb,
+    deleteRole
 };
