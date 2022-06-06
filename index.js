@@ -64,6 +64,7 @@ const prompts = {
     validateStringLength: 'Response must be 1 to 30 characters in length.'
 }
 
+// Checks text input for length and that it's text and NaN
 function validateInputText(input) {
     if (isNaN(input) && input.length > 0 && input.length <= 30) {
         return true;
@@ -155,6 +156,7 @@ function returnToMenuHandler(data) {
     return init();
 };
 
+// Function for adding a new department
 function addDepartment() {
     return inquirer.prompt([
         {
@@ -167,14 +169,18 @@ function addDepartment() {
         }
     ])
         .then(data => {
+            // Creates a new department object using the name that was input
             const newDepartment = new Department(data.name);
+            // Adds the new department to the database
             return postDepartment(newDepartment);
         })
         .then(result => console.log(result))
         .then(returnToMenu);
 };
 
+// Function for adding a new role
 function addRole() {
+    // Returns an array containing all of the departments in the database
     arrayOfDepartments().then(departmentsArray => {
         return inquirer.prompt([
             {
@@ -201,13 +207,17 @@ function addRole() {
                 type: 'list',
                 name: 'department',
                 message: prompts.addRoleOptions.department,
+                // Uses the array of all departments in the database for the answer choices
                 choices: departmentsArray
             }
         ])
             .then(data => {
+                // Converts the department name to it primary key value
                 return getDepartmentId(data.department)
                     .then(id => {
+                        // Creates a new role object using the prompt inputs
                         const newRole = new Role(data.title, data.salary, id);
+                        // Adds the new role to the database
                         return postRole(newRole);
                     })
             })
@@ -216,8 +226,11 @@ function addRole() {
     })
 };
 
+// Function for adding an employee
 function addEmployee() {
+    // Returns an array containing all of the roles in the database
     arrayOfRoles().then(rolesArray => {
+        // Returns an array containing all of the managers in the database
         return arrayOfManagers().then(managersArray => {
             return inquirer.prompt([
                 {
@@ -240,20 +253,25 @@ function addEmployee() {
                     type: 'list',
                     name: 'role',
                     message: prompts.addEmployeeOptions.role,
+                    // Uses the array of all roles in the database for the answer choices
                     choices: rolesArray
                 },
                 {
                     type: 'list',
                     name: 'manager',
                     message: prompts.addEmployeeOptions.manager,
+                    // Uses the array of all managers in the database for the answer choices
                     choices: managersArray
                 }
             ])
         })
     })
         .then(employee => {
+            // Gets the manager's primary key value
             return getEmployeeId(employee.manager).then(managerId => {
+                // Gets the role's primary key value
                 return getRoleId(employee.role).then(roleId => {
+                    // Creates a new employee object using the prompt inputs
                     const newEmployee = new Employee(employee.firstName, employee.lastName, roleId, managerId);
                     return postEmployee(newEmployee);
                 })
@@ -264,16 +282,21 @@ function addEmployee() {
 };
 
 function updateRole() {
+    // Returns an array containing all of the roles in the database
     arrayOfRoles()
         .then(rolesArray => {
+            // Returns an array containing all of the departments in the database
             return arrayOfDepartments().then(departmentsArray => {
                 return inquirer.prompt([
+                    // Which role to update
                     {
                         type: 'list',
                         name: 'role',
                         message: prompts.updateRoleOptions.which,
+                        // Uses the array of all roles in the database for the answer choices
                         choices: rolesArray
                     },
+                    // Which property of the role to update
                     {
                         type: 'list',
                         name: 'choice',
@@ -282,6 +305,7 @@ function updateRole() {
                     }
                 ])
                     .then(answer => {
+                        // Functions to run based on the user's answer
                         switch (answer.choice) {
                             case 'Department':
                                 updateRoleDepartment(answer.role, departmentsArray);
@@ -295,19 +319,23 @@ function updateRole() {
         })
 };
 
+// Function for updating a role's department
 function updateRoleDepartment(roleName, departmentsArray) {
     return inquirer.prompt([
         {
             type: 'list',
             name: 'department',
             message: prompts.updateRoleOptions.which,
+            // Uses the array of all departments in the database for the answer choices
             choices: departmentsArray
         }
     ])
         .then(data => {
             return getDepartmentId(data.department)
                 .then(departmentId => {
+                    // Gets the role's primary key value
                     getRoleId(roleName).then(roleId => {
+                        // Function for updating the role's department in the database using the department and role ID's
                         return updateRoleDepartmentDb(departmentId, roleId);
                     })
                         .then(response => {
@@ -318,6 +346,7 @@ function updateRoleDepartment(roleName, departmentsArray) {
         })
 };
 
+// Function for updating a role's salary
 function updateRoleSalary(roleName) {
     return inquirer.prompt([
         {
@@ -334,7 +363,9 @@ function updateRoleSalary(roleName) {
         }
     ])
         .then(data => {
+            // Gets the role's primary key value
             getRoleId(roleName).then(roleId => {
+                // Function for updating the role's salary in the database using the input salary and the role ID
                 return updateRoleSalaryDb(data.salary, roleId);
             })
                 .then(response => {
@@ -344,34 +375,42 @@ function updateRoleSalary(roleName) {
         })
 }
 
+// Function for updating an employee's role
 function updateEmployeeRole() {
+    // Returns an array containing all of the roles in the database
     arrayOfEmployees().then(employeeArray => {
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'name',
                 message: prompts.updateEmployeeOptions.which,
+                // Uses the array of all employees in the database for the answer choices
                 choices: employeeArray
             }
         ])
     })
         .then(employee => {
+            // Gets the employee's primary key value
             return getEmployeeId(employee.name)
         })
         .then(id => {
+            // Returns an array containing all of the roles in the database
             return arrayOfRoles().then(rolesArray => {
                 return inquirer.prompt([
                     {
                         type: 'list',
                         name: 'role',
                         message: prompts.addEmployeeOptions.role,
+                        // Uses the array of all roles in the database for the answer choices
                         choices: rolesArray
                     }
                 ])
                     .then(data => {
+                        // Gets the role's primary key value
                         return getRoleId(data.role)
                     })
                     .then(roleId => {
+                        // Function for updating the employee in the database, passing "role" as the first parameter to indicate the role is being updated, and then using the role and employee ID's
                         return updateEmployee('role', roleId, id)
                     })
                     .then(result => console.log(result))
@@ -380,34 +419,42 @@ function updateEmployeeRole() {
         });
 };
 
+// Function for updating an employee's manager
 function updateEmployeeManager() {
+    // Returns an array containing all of the roles in the database
     arrayOfEmployees().then(employeeArray => {
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'name',
                 message: prompts.updateEmployeeOptions.which,
+                // Uses the array of all employees in the database for the answer choices
                 choices: employeeArray
             }
         ])
     })
         .then(employee => {
+            // Gets the employee's primary key value
             return getEmployeeId(employee.name)
         })
         .then(id => {
+            // Returns an array containing all of the managers in the database
             return arrayOfManagers().then(managersArray => {
                 return inquirer.prompt([
                     {
                         type: 'list',
                         name: 'manager',
                         message: prompts.addEmployeeOptions.manager,
+                        // Uses the array of all managers in the database for the answer choices
                         choices: managersArray
                     }
                 ])
                     .then(data => {
+                        // Gets the manager's primary key value
                         return getEmployeeId(data.manager)
                     })
                     .then(managerId => {
+                        // Function for updating the employee in the database, passing "manager" as the first parameter to indicate the manager is being updated, and then using the manager's and employee's employee ID's
                         return updateEmployee('manager', managerId, id)
                     })
                     .then(result => console.log(result))
@@ -416,18 +463,24 @@ function updateEmployeeManager() {
         });
 };
 
+// Function for displaying all employees under a specified manager
 function displayByManager() {
+    // Returns an array containing all of the managers in the database
     arrayOfManagers().then(managersArray => {
+        // Removes the "none" option from the managers array
         managersArray.pop();
+        // Prompts the user to chose a manager
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'manager',
                 message: prompts.addEmployeeOptions.manager,
+                // Uses the array of all managers in the database for the answer choices
                 choices: managersArray
             }
         ])
             .then(data => {
+                // Displays employees who are under the user's chosen manager
                 return displayEmployeesbyManager(data.manager);
             })
             .then(rows => console.table(rows))
@@ -435,17 +488,22 @@ function displayByManager() {
     });
 };
 
+// Function for displaying all employees working in a specified department
 function displayByDepartment() {
+    // Returns an array containing all of the departments in the database
     arrayOfDepartments().then(departmentsArray => {
+        // Prompts the user to chose a department
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'department',
                 message: prompts.viewByDepartmentOptions.which,
+                // Uses the array of all departments in the database for the answer choices
                 choices: departmentsArray
             }
         ])
             .then(data => {
+                // Displays employees who work in the user's chosen department
                 return displayEmployeesbyDepartment(data.department);
             })
             .then(rows => console.table(rows))
@@ -453,17 +511,22 @@ function displayByDepartment() {
     });
 };
 
+// Function for deleting a department
 function deleteDepartment() {
+    // Returns an array containing all of the departments in the database
     arrayOfDepartments().then(departmentsArray => {
+        // Prompts the user to chose a department
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'department',
                 message: prompts.deleteDepartmentOptions.which,
+                // Uses the array of all departments in the database for the answer choices
                 choices: departmentsArray
             }
         ])
             .then(data => {
+                // Function for removing the user's chosen department from the database
                 return deleteDep(data.department);
             })
             .then(message => console.log(message))
@@ -471,17 +534,22 @@ function deleteDepartment() {
     });
 };
 
+// Function for deleting a role
 function deleteARole() {
+    // Returns an array containing all of the roles in the database
     arrayOfRoles().then(rolesArray => {
+        // Prompts the user to chose a role
         return inquirer.prompt([
             {
                 type: 'list',
                 name: 'role',
                 message: prompts.deleteRoleOptions.which,
+                // Uses the array of all roles in the database for the answer choices
                 choices: rolesArray
             }
         ])
             .then(data => {
+                // Function for removing the user's chosen role from the database
                 return deleteRole(data.role);
             })
             .then(message => console.log(message))
@@ -489,8 +557,10 @@ function deleteARole() {
     });
 };
 
+// Function for deleting an employee
 function deleteEmployee() {
     arrayOfEmployees().then(employeesArray => {
+        // Prompts the user to chose an employee
         return inquirer.prompt([
             {
                 type: 'list',
@@ -500,6 +570,7 @@ function deleteEmployee() {
             }
         ])
             .then(data => {
+                // Function for removing the user's chosen employee from the database
                 return deleteEmp(data.employee);
             })
             .then(message => console.log(message))
